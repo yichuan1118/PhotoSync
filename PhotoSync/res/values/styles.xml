@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+<!--     <style name="AlbumView" /> -->
+
+<!--     <style name="AlbumView.GridView" parent="@style/AlbumView"> -->
+<!--         <item name="android:scrollbarStyle">outsideOverlay</item> -->
+<!--         <item name="android:background">@color/album_background_color</item> -->
+<!--         <item name="android:paddingLeft">0.0dip</item> -->
+<!--         <item name="android:paddingTop">0.0dip</item> -->
+<!--         <item name="android:paddingRight">0.0dip</item> -->
+<!--         <item name="android:paddingBottom">0.0dip</item> -->
+<!--         <item name="android:layout_width">fill_parent</item> -->
+<!--         <item name="android:layout_height">fill_parent</item> -->
+<!--         <item name="android:cacheColorHint">@color/album_background_color</item> -->
+<!--         <item name="android:horizontalSpacing">@dimen/album_grid_horizontal_spacing</item> -->
+<!--         <item name="android:verticalSpacing">@dimen/album_grid_vertical_spacing</item> -->
+<!--         <item name="android:stretchMode">columnWidth</item> -->
+<!--         <item name="android:columnWidth">@dimen/album_grid_width</item> -->
+<!--         <item name="android:numColumns">auto_fit</item> -->
+<!--     </style> -->
+
+<!--     <style name="AlbumView.Photo" parent="@style/AlbumView"> -->
+<!--         <item name="android:layout_gravity">center</item> -->
+<!--         <item name="android:layout_width">@dimen/album_photo_width</item> -->
+<!--         <item name="android:layout_height">@dimen/album_photo_height</item> -->
+<!--         <item name="android:scaleType">centerCrop</item> -->
+<!--     </style> -->
+
+<!--     <style name="AlbumView.Instructions" parent="@style/AlbumView"> -->
+<!--         <item name="android:textColor">@color/album_instructions_text_color</item> -->
+<!--         <item name="android:gravity">center_vertical</item> -->
+<!--         <item name="android:background">@color/album_instructions_background_color</item> -->
+<!--         <item name="android:paddingLeft">@dimen/album_instructions_left_padding</item> -->
+<!--         <item name="android:layout_width">fill_parent</item> -->
+<!--         <item name="android:layout_height">@dimen/album_instructions_height</item> -->
+<!--         <item name="android:singleLine">true</item> -->
+<!--     </style> -->
+
+<!--     <style name="AlbumView.BottomActionBar" parent="@style/AlbumView"> -->
+<!--         <item name="android:background">@color/title_background</item> -->
+<!--         <item name="android:layout_width">fill_parent</item> -->
+<!--         <item name="android:layout_height">@dimen/album_bottom_action_bar_height</item> -->
+<!--     </style> -->
+
+    <style name="Theme.Album" parent="@style/Holo.Theme.Sherlock">
+
+<!--         If you want to use the default ViewPagerIndicator-styles, use the following: -->
+        <item name="vpiTabPageIndicatorStyle">@style/Widget.TabPageIndicator</item>
+<!--         Put whatever other styles you want to define in your custom theme -->
+        <item name="actionModeCloseDrawable">@drawable/navigation_back</item>
+        <item name="android:actionModeCloseDrawable">@drawable/navigation_back</item>
+    </style>
+
+</resources>

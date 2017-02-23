@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.metaisle.photosync"
+    android:versionCode="10"
+    android:versionName="2.2" >
+
+    <uses-sdk
+        android:minSdkVersion="8"
+        android:targetSdkVersion="14" />
+
+    <!-- Collector -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.BATTERY_STATS" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <!-- Collector -->
+
+    <application
+        android:name=".app.PhotoSyncApplication"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/Theme.Album" >
+        <receiver android:name=".receiver.BootReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".app.PhotoPagerActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".app.PhotoViewActivity"
+            android:label="@string/app_name" >
+        </activity>
+        <!-- <activity -->
+        <!-- android:name=".app.ShareActivity" -->
+        <!-- android:label="Select album to upload:" -->
+        <!-- android:theme="@android:style/Theme.Dialog" > -->
+        <!-- </activity> -->
+        <activity android:name=".app.PrefsActivity" >
+        </activity>
+        <activity
+            android:name=".app.SharePagerActivity"
+            android:label="Share photos"
+            android:windowSoftInputMode="adjustPan" >
+        </activity>
+        <activity android:name=".app.PhotoByDateActivity" >
+        </activity>
+
+        <provider
+            android:name=".data.Provider"
+            android:authorities="com.metaisle.photosync.data.Provider"
+            android:exported="false" >
+        </provider>
+
+        <service android:name=".service.MediaTrackingService" >
+        </service>
+        <service android:name=".service.UploadService" >
+        </service>
+
+        <!-- Collector -->
+        <service
+            android:name="com.metaisle.profiler.CollectorService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" >
+                </action>
+                <action android:name="android.intent.action.USER_PRESENT" >
+                </action>
+                <action android:name="android.intent.action.SCREEN_OFF" >
+                </action>
+                <action android:name="android.intent.action.SCREEN_ON" >
+                </action>
+                <action android:name="android.intent.action.DOCK_EVENT" >
+                </action>
+                <action android:name="android.intent.action.HEADSET_PLUG" >
+                </action>
+                <action android:name="PhotoSync.Profiler.RESTART_SERVICE" >
+                </action>
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </service>
+
+        <receiver android:name="com.metaisle.profiler.RestartReceiver" >
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <!-- Collector -->
+
+        <receiver
+            android:name=".receiver.CameraMonitor"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="com.android.camera.NEW_PICTURE" />
+                <action android:name="android.hardware.action.NEW_PICTURE" />
+                <action android:name="android.hardware.action.NEW_VIDEO" />
+
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".receiver.ConnectivityReceiver"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <activity
+            android:name=".app.ProfilerActivity"
+            android:screenOrientation="landscape" >
+            <intent-filter>
+                <action android:name="profilerUI_startup" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

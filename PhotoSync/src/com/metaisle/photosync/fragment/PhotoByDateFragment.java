@@ -1,0 +1,365 @@
+package com.metaisle.photosync.fragment;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
+
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.app.LoaderManager.LoaderCallbacks;
+import android.support.v4.content.CursorLoader;
+import android.support.v4.content.Loader;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+
+import com.actionbarsherlock.app.SherlockFragment;
+import com.actionbarsherlock.view.ActionMode;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
+import com.handmark.pulltorefresh.library.PullToRefreshBase;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.Mode;
+import com.handmark.pulltorefresh.library.PullToRefreshBase.OnRefreshListener2;
+import com.handmark.pulltorefresh.library.PullToRefreshListView;
+import com.metaisle.photosync.R;
+import com.metaisle.photosync.app.SharePagerActivity;
+import com.metaisle.photosync.data.AlbumTable;
+import com.metaisle.photosync.data.PhotoTable;
+import com.metaisle.photosync.data.Prefs;
+import com.metaisle.photosync.data.Provider;
+import com.metaisle.photosync.facebook.DeleteTask;
+import com.metaisle.photosync.facebook.SingleAlbumPhotosTask;
+import com.metaisle.photosync.fragment.PhotoByDateAdapter.MediaTracker;
+import com.metaisle.photosync.view.SelectableImageView;
+import com.metaisle.util.Util;
+
+public class PhotoByDateFragment extends SherlockFragment implements
+		LoaderCallbacks<Cursor>, OnLongClickListener {
+	public static final String KEY_ALBUM_ID = "key_album_id";
+
+	public SharedPreferences mPrefs;
+	public PhotoByDateAdapter mAdapter;
+	public ActionMode mActionMode;
+	private PullToRefreshListView mPtrListView;
+	private ListView mListView;
+
+	private LinearLayout mPhotosLayout;
+
+	private long mAlbumID = 0;
+	private int mAlbumCount = 0;
+
+	// private View mFooter;
+
+	private boolean mLoading = false;
+
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		mPrefs = getActivity().getSharedPreferences(Prefs.PREFS_NAME,
+				Context.MODE_PRIVATE);
+
+		Bundle b = getArguments();
+		if (b != null) {
+			mAlbumID = b.getLong(KEY_ALBUM_ID);
+		}
+
+		long private_id = mPrefs.getLong(Prefs.KEY_PRIVATE_ALBUM_ID, 0);
+		if (mAlbumID == 0) {
+			mAlbumID = private_id;
+		}
+	}
+
+	@Override
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+
+		mPhotosLayout = (LinearLayout) inflater.inflate(
+				R.layout.photos_date_ptr_list, null);
+		mPtrListView = (PullToRefreshListView) mPhotosLayout
+				.findViewById(R.id.photos_date_listview);
+		mPtrListView.setMode(Mode.BOTH);
+		mAdapter = new PhotoByDateAdapter(getActivity(), null);
+		mAdapter.setOnLongClickListener(this);
+		mListView = mPtrListView.getRefreshableView();
+		mListView.setAdapter(mAdapter);
+
+		if (mAlbumID == 0) {
+			getLoaderManager().initLoader(2, null, this);
+		} else {
+			getLoaderManager().initLoader(0, null, this);
+		}
+
+		mPtrListView.setOnRefreshListener(new OnRefreshListener2<ListView>() {
+
+			@Override
+			public void onPullDownToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+				Util.log("onRefresh, logged in "
+						+ Prefs.facebook.isSessionValid());
+				if (Prefs.facebook != null && Prefs.facebook.isSessionValid()) {
+					new SingleAlbumPhotosTask(getActivity(), String
+							.valueOf(mAlbumID), mPtrListView).execute();
+				} else {
+					mPtrListView.onRefreshComplete();
+				}
+			}
+
+			@Override
+			public void onPullUpToRefresh(
+					PullToRefreshBase<ListView> refreshView) {
+
+				if (!mLoading) {
+					mLoading = true;
+					Util.log("load more");
+					if(mAdapter.mListRows == null||mAdapter.mListRows.size()==0){
+						mPtrListView.onRefreshComplete();
+						return;
+					}
+
+					ArrayList<String> ids = mAdapter.mListRows
+							.get(mAdapter.mListRows.size() - 1).ids;
+					String id = ids.get(ids.size() - 1);
+
+					String base64 = Util.EncodeBase64(id);
+
+					mLoading = true;
+					new SingleAlbumPhotosTask(getActivity(), String
+							.valueOf(mAlbumID), base64, new Handler() {
+						@Override
+						public void handleMessage(Message msg) {
+							mLoading = false;
+							super.handleMessage(msg);
+							mPtrListView.onRefreshComplete();
+						}
+					}).execute();
+				}
+			}
+		});
+
+		return mPhotosLayout;
+	}
+
+	@Override
+	public void onActivityCreated(Bundle savedInstanceState) {
+		super.onActivityCreated(savedInstanceState);
+		mListView.setDivider(null);
+		mListView.setDividerHeight(0);
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+
+		Util.log("mAlbumID " + mAlbumID + " id " + id);
+
+		switch (id) {
+		case 2:
+			return new CursorLoader(getActivity(), Provider.ALBUM_CONTENT_URI,
+					new String[] { AlbumTable.ALBUM_ID, AlbumTable.COUNT },
+					AlbumTable.ALBUM_NAME + "=?",
+					new String[] { Prefs.PHOTOSYNC_PRIVATE_ALBUM_NAME },
+					PhotoTable.CREATED_TIME + " DESC");
+		case 0:
+			return new CursorLoader(getActivity(), Provider.ALBUM_CONTENT_URI,
+					new String[] { AlbumTable.COUNT, AlbumTable.ALBUM_NAME },
+					AlbumTable.ALBUM_ID + "=?",
+					new String[] { String.valueOf(mAlbumID) },
+					PhotoTable.CREATED_TIME + " DESC");
+		case 1:
+			return new CursorLoader(getActivity(), Provider.PHOTO_CONTENT_URI,
+					new String[] { PhotoTable._ID, PhotoTable.CREATED_MONTH,
+							PhotoTable.SOURCE, PhotoTable.PICTURE,
+							PhotoTable.PHOTO_ID }, PhotoTable.ALBUM_ID + "=?",
+					new String[] { String.valueOf(mAlbumID) },
+					PhotoTable.POSITION + " ASC");
+		default:
+			throw new IllegalStateException("Unknow loader type.");
+		}
+
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> loader, Cursor cursor) {
+
+		// Util.log("id " + loader.getId());
+
+		switch (loader.getId()) {
+		case 2:
+			if (cursor.moveToFirst()) {
+				mAlbumID = cursor.getLong(cursor
+						.getColumnIndex(AlbumTable.ALBUM_ID));
+				mAlbumCount = cursor.getInt(cursor
+						.getColumnIndex(AlbumTable.COUNT));
+				Util.log("mAlbumID " + mAlbumID);
+
+				if (mAlbumID != 0) {
+					mPrefs.edit().putLong(Prefs.KEY_PRIVATE_ALBUM_ID, mAlbumID)
+							.commit();
+					getLoaderManager().initLoader(1, null, this);
+				} else {
+					mPtrListView.setMode(Mode.PULL_DOWN_TO_REFRESH);
+				}
+			}
+
+			break;
+		case 0:
+			if (cursor.moveToFirst()) {
+				mAlbumCount = cursor.getInt(cursor
+						.getColumnIndex(AlbumTable.COUNT));
+				// getActivity().setTitle(
+				// cursor.getString(cursor
+				// .getColumnIndex(AlbumTable.ALBUM_NAME)));
+			}
+			getLoaderManager().initLoader(1, null, this);
+			break;
+		case 1:
+			// Util.log("cursor " + cursor.getCount() + " album " +
+			// mAlbumCount);
+			if (cursor.getCount() == mAlbumCount) {
+				mPtrListView.setMode(Mode.PULL_DOWN_TO_REFRESH);
+			}
+			mAdapter.swapCursor(cursor);
+			break;
+		default:
+			throw new IllegalStateException("Unknow loader type.");
+		}
+
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> loader) {
+		switch (loader.getId()) {
+		case 2:
+			break;
+		case 0:
+			break;
+		case 1:
+			mAdapter.swapCursor(null);
+			break;
+		default:
+			throw new IllegalStateException("Unknow loader type.");
+		}
+	}
+
+	public ActionMode.Callback mActionModeCallback = new ActionMode.Callback() {
+
+		@Override
+		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			MenuInflater inflater = mode.getMenuInflater();
+			inflater.inflate(R.menu.share_context_menu, menu);
+			return true;
+		}
+
+		@Override
+		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			return false;
+		}
+
+		@Override
+		public boolean onActionItemClicked(final ActionMode mode, MenuItem item) {
+			switch (item.getItemId()) {
+			case R.id.menu_share:
+				Util.log("mToShare " + mAdapter.mToShare.keySet());
+				if (mAdapter.mToShare.size() > 0) {
+					Intent i = new Intent(getActivity(),
+							SharePagerActivity.class);
+
+					ArrayList<String> pictures = new ArrayList<String>();
+					Set<String> keyset = mAdapter.mToShare.keySet();
+					for (String k : keyset) {
+						pictures.add(mAdapter.mToShare.get(k).picture);
+					}
+
+					i.putExtra(SharePagerActivity.KEY_TO_SHARE_SOURCE,
+							mAdapter.mToShareSource);
+					i.putExtra(SharePagerActivity.KEY_TO_SHARE_PICTURE,
+							pictures);
+					startActivity(i);
+					mode.finish();
+				}
+				return true;
+
+			case R.id.menu_delete:
+				Util.log("To delete " + mAdapter.mToShare.keySet());
+				if (mAdapter.mToShare.size() > 0) {
+					AlertDialog dialog = new AlertDialog.Builder(getActivity())
+							.setTitle("Delete photos")
+							.setMessage("Are you sure?")
+							.setPositiveButton("Yes",
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(
+												DialogInterface dialog,
+												int which) {
+											String[] ids = new String[mAdapter.mToShare
+													.size()];
+											Set<String> keyset = mAdapter.mToShare
+													.keySet();
+											int i = 0;
+											for (String k : keyset) {
+												ids[i++] = mAdapter.mToShare
+														.get(k).id;
+											}
+											Util.log("delete "
+													+ Arrays.toString(ids));
+											new DeleteTask(getActivity(),
+													String.valueOf(mAlbumID))
+													.execute(ids);
+											mode.finish();
+										}
+									})
+							.setNegativeButton("Cancel",
+									new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(
+												DialogInterface dialog,
+												int which) {
+											dialog.dismiss();
+										}
+									}).create();
+					dialog.show();
+				}
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		@Override
+		public void onDestroyActionMode(ActionMode mode) {
+			mActionMode = null;
+			mAdapter.mToShare.clear();
+			mAdapter.mToShareSource.clear();
+			mAdapter.notifyDataSetChanged();
+			mAdapter.mSelectMode = false;
+		}
+
+	};
+
+	@Override
+	public boolean onLongClick(View v) {
+		if (!mAdapter.mSelectMode) {
+			mAdapter.mSelectMode = true;
+			mActionMode = getSherlockActivity().startActionMode(
+					mActionModeCallback);
+			MediaTracker mt = (MediaTracker) v.getTag();
+			mAdapter.mToShare.put(mt.source, mt);
+			SelectableImageView siv = (SelectableImageView) v;
+			siv.setSelected(true);
+			mAdapter.notifyDataSetChanged();
+			return true;
+		}
+		return false;
+	}
+
+}

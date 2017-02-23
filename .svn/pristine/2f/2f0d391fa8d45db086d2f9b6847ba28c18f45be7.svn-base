@@ -1,0 +1,48 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <ImageView
+        android:id="@+id/home_feed_avatar"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:adjustViewBounds="true"
+        android:padding="10dp"
+        android:src="@drawable/content_new_picture" />
+
+    <TextView
+        android:id="@+id/home_feed_story"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_toRightOf="@+id/home_feed_avatar"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/home_feed_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/home_feed_story"
+        android:layout_below="@+id/home_feed_story"
+        android:textAppearance="?android:attr/textAppearanceSmall" />
+
+    <TextView
+        android:id="@+id/home_feed_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/home_feed_time"
+        android:layout_toRightOf="@+id/home_feed_avatar" />
+
+    <ImageView
+        android:id="@+id/home_feed_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/home_feed_message"
+        android:layout_centerHorizontal="true"
+        android:adjustViewBounds="true"
+        android:padding="10dp"
+        android:src="@drawable/missing_photo_background" />
+
+</RelativeLayout>

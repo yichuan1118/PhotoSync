@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <item name="date" type="id">false</item>
+    <item name="album_view_photo" type="id">false</item>
+    <item name="count" type="id">false</item>
+    <item name="divider" type="id">false</item>
+
+</resources>

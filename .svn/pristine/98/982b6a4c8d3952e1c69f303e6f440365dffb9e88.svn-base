@@ -1,0 +1,23 @@
+package com.metaisle.photosync.receiver;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
+import com.metaisle.photosync.service.MediaTrackingService;
+import com.metaisle.photosync.service.UploadService;
+import com.metaisle.profiler.CollectorService;
+
+public class BootReceiver extends BroadcastReceiver {
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		CameraMonitor.registerObservers(context.getApplicationContext());
+
+		context.startService(new Intent(context, MediaTrackingService.class));
+		
+		context.startService(new Intent(context, CollectorService.class));
+		context.startService(new Intent(context, UploadService.class));
+	}
+
+}

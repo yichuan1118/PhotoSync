@@ -1,0 +1,15 @@
+[submodule "lib/ActionBarSherlock"]
+	path = lib/ActionBarSherlock
+	url = https://github.com/JakeWharton/ActionBarSherlock.git
+[submodule "lib/Android-PullToRefresh"]
+	path = lib/Android-PullToRefresh
+	url = https://github.com/chrisbanes/Android-PullToRefresh.git
+[submodule "lib/facebook-android-sdk"]
+	path = lib/facebook-android-sdk
+	url = https://github.com/facebook/facebook-android-sdk.git
+[submodule "lib/HoloEverywhere"]
+	path = lib/HoloEverywhere
+	url = https://github.com/ChristopheVersieux/HoloEverywhere.git
+[submodule "lib/Android-ViewPagerIndicator"]
+	path = lib/Android-ViewPagerIndicator
+	url = https://github.com/JakeWharton/Android-ViewPagerIndicator.git

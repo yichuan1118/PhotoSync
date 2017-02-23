@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="AutoUpload Settings" >
+        <CheckBoxPreference
+            android:key="auto_upload_wifi_only"
+            android:summary="AutoUpload photos on wifi only."
+            android:title="AutoUpload wifi only." />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Functional Settings" >
+        <CheckBoxPreference
+            android:key="key_enable_timeline"
+            android:summary="Enable Timeline functions in PhotoSync"
+            android:title="Enable Timelnie" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Data Collection" >
+        <CheckBoxPreference
+            android:key="key_enable_profiling"
+            android:summary="Enable data collection in PhotoSync"
+            android:title="Enable Data Collection" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Privacy Policy" 
+        android:layout="@layout/privacy" />
+
+</PreferenceScreen>
